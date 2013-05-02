@@ -23,13 +23,36 @@
 // ___ GRAMMAR ___
 
 {
-  function join(arg)
+  function _join(arg)
   {
     if (typeof(arg) == "string")
       return arg;
-     else
-    return arg.join("");
-  } 
+    else
+    {
+      ret = "";
+      for (v in arg) { ret += _join(arg[v]); }
+      return ret;
+    }
+  }
+
+  function _node(arg, label)
+  {
+    if (typeof( arg ) == "string")
+      return arg;
+    var ret = [];
+    if (label != undefined) ret.push( label );
+    for (v in arg)
+    {
+      if (arg[v].length != 0)
+        ret.push( _node( arg[v], undefined ) );
+    }
+    return ret;
+  }
+ 
+  function _node2(arg1, arg2, label)
+  {
+    return [label].concat(_node(arg1)).concat(_node(arg2));
+  }
 }
 
 text "text" = intro_null NAI_clause* text_part_2 (!text_1 joik_jek)? text_1? faho_clause EOF?
@@ -130,13 +153,13 @@ sumti_4 = sumti_5 / gek sumti gik sumti_4
 
 sumti_5 = quantifier? sumti_6 relative_clauses? / quantifier selbri KU_clause? free* relative_clauses?
 
-sumti_6 = ZO_clause free* / ZOI_clause free* / LOhU_clause free* / lerfu_string !MOI_clause BOI_clause? free* / LU_clause text LIhU_clause? free* / (LAhE_clause free* / NAhE_clause BO_clause free*) relative_clauses? sumti LUhU_clause? free* / KOhA_clause free* / LA_clause free* relative_clauses? CMENE_clause+ free* / (LA_clause / LE_clause) free* sumti_tail KU_clause? free* / li_clause
+sumti_6 = expr:(ZO_clause free* / ZOI_clause free* / LOhU_clause free* / lerfu_string !MOI_clause BOI_clause? free* / LU_clause text LIhU_clause? free* / (LAhE_clause free* / NAhE_clause BO_clause free*) relative_clauses? sumti LUhU_clause? free* / KOhA_clause free* / LA_clause free* relative_clauses? CMENE_clause+ free* / (LA_clause / LE_clause) free* sumti_tail KU_clause? free* / li_clause) {return _node(expr, "sumti_6");}
 
 li_clause = LI_clause free* mex LOhO_clause? free*
 
-sumti_tail = (sumti_6 relative_clauses?)? sumti_tail_1 / relative_clauses sumti_tail_1
+sumti_tail = expr:((sumti_6 relative_clauses?)? sumti_tail_1 / relative_clauses sumti_tail_1) {return _node(expr, "sumti_tail"); }
 
-sumti_tail_1 = selbri relative_clauses? / quantifier selbri relative_clauses? / quantifier sumti
+sumti_tail_1 = expr:(selbri relative_clauses? / quantifier selbri relative_clauses? / quantifier sumti) {return _node(expr, "sumti_tail_1");}
 
 relative_clauses = relative_clause (ZIhE_clause free* relative_clause)*
 
@@ -150,26 +173,26 @@ relative_clause_1 = GOI_clause free* term GEhU_clause? free* / NOI_clause free* 
 
 relative_clause_start = GOI_clause / NOI_clause
 
-selbri = tag? selbri_1
+selbri = expr:(tag? selbri_1) {return _node(expr, "selbri"); }
 
-selbri_1 = selbri_2 / NA_clause free* selbri
+selbri_1 = expr:(selbri_2 / NA_clause free* selbri) {return (expr[0] == "selbri_2") ? ["selbri_1", expr] : _node(expr, "selbri_1"); }
 
-selbri_2 = selbri_3 (CO_clause free* selbri_2)?
+selbri_2 = expr:(selbri_3 (CO_clause free* selbri_2)?) {return _node(expr, "selbri_2"); }
 
-selbri_3 = selbri_4+
+selbri_3 = expr:(selbri_4+) {return _node(expr, "selbri_3"); }
 
-selbri_4 = selbri_5 (joik_jek selbri_5 / joik stag? KE_clause free* selbri_3 KEhE_clause? free*)*
+selbri_4 = expr:(selbri_5 (joik_jek selbri_5 / joik stag? KE_clause free* selbri_3 KEhE_clause? free*)*) {return _node(expr, "selbri_4"); }
 
-selbri_5 = selbri_6 ((jek / joik) stag? BO_clause free* selbri_5)?
+selbri_5 = expr:(selbri_6 ((jek / joik) stag? BO_clause free* selbri_5)?) {return _node(expr, "selbri_5"); }
 
-selbri_6 = tanru_unit (BO_clause free* selbri_6)? / NAhE_clause? free* guhek selbri gik selbri_6
+selbri_6 = expr:(tanru_unit (BO_clause free* selbri_6)? / NAhE_clause? free* guhek selbri gik selbri_6) {return _node(expr, "selbri_6"); }
 
-tanru_unit = tanru_unit_1 (CEI_clause free* tanru_unit_1)*
+tanru_unit = expr:(tanru_unit_1 (CEI_clause free* tanru_unit_1)*) {return _node(expr, "tanru_unit"); }
 
-tanru_unit_1 = tanru_unit_2 linkargs?
+tanru_unit_1 = expr:(tanru_unit_2 linkargs?) {return _node(expr, "tanru_unit_1"); }
 
 // ** zei is part of BRIVLA_clause
-tanru_unit_2 = BRIVLA_clause free* / GOhA_clause RAhO_clause? free* / KE_clause free* selbri_3 KEhE_clause? free* / ME_clause free* (sumti / lerfu_string) MEhU_clause? free* MOI_clause? free* / (number / lerfu_string) MOI_clause free* / NUhA_clause free* mex_operator / SE_clause free* tanru_unit_2 / JAI_clause free* tag? tanru_unit_2 / NAhE_clause free* tanru_unit_2 / NU_clause NAI_clause? free* (joik_jek NU_clause NAI_clause? free*)* subsentence KEI_clause? free*
+tanru_unit_2 = expr:(BRIVLA_clause free* / GOhA_clause RAhO_clause? free* / KE_clause free* selbri_3 KEhE_clause? free* / ME_clause free* (sumti / lerfu_string) MEhU_clause? free* MOI_clause? free* / (number / lerfu_string) MOI_clause free* / NUhA_clause free* mex_operator / SE_clause free* tanru_unit_2 / JAI_clause free* tag? tanru_unit_2 / NAhE_clause free* tanru_unit_2 / NU_clause NAI_clause? free* (joik_jek NU_clause NAI_clause? free*)* subsentence KEI_clause? free*) {return _node(expr, "tanru_unit_2"); }
 
 //; linkargs = BE_clause free* term links? BEhO_clause? free*
 
@@ -385,15 +408,15 @@ su_word = !NIhO_clause !LU_clause !TUhE_clause !TO_clause !SU_clause !FAhO_claus
 // ___ SELMAHO ___
 // Do *NOT* delete the line above!
 
-BRIVLA_clause = BRIVLA_pre BRIVLA_post / zei_clause
+BRIVLA_clause = expr:(BRIVLA_pre BRIVLA_post / zei_clause) {return (expr.length == 2) ? _node2(expr[0], expr[1], "BRIVLA_clause") : _node(expr[0], "BRIVLA_clause"); }
 BRIVLA_pre = pre_clause BRIVLA spaces?
 BRIVLA_post = post_clause
-BRIVLA_no_SA_handling = pre_clause BRIVLA post_clause / zei_clause_no_SA
+// BRIVLA_no_SA_handling = pre_clause BRIVLA post_clause / zei_clause_no_SA
 
-CMENE_clause = CMENE_pre CMENE_post
+CMENE_clause = pre:CMENE_pre post:CMENE_post {return _node2(pre, post, "CMENE_clause"); }
 CMENE_pre = pre_clause CMENE spaces?
 CMENE_post = post_clause
-CMENE_no_SA_handling = pre_clause CMENE post_clause
+// CMENE_no_SA_handling = pre_clause CMENE post_clause
 
 CMAVO_clause = CMAVO_pre CMAVO_post
 CMAVO_pre = pre_clause CMAVO spaces?
@@ -719,10 +742,10 @@ KI_post = post_clause
 KI_no_SA_handling = pre_clause KI post_clause
 
 //         sumti anaphora 
-KOhA_clause = KOhA_pre KOhA_post
+KOhA_clause = pre:KOhA_pre post:KOhA_post {return _node2(pre, post, "KOhA_clause"); }
 KOhA_pre = pre_clause KOhA spaces?
 KOhA_post = post_clause
-KOhA_no_SA_handling = pre_clause KOhA spaces?
+// KOhA_no_SA_handling = pre_clause KOhA spaces?
 
 //         right terminator for descriptions, etc. 
 KU_clause = KU_pre KU_post
@@ -744,10 +767,10 @@ KUhO_no_SA_handling = pre_clause KUhO post_clause
 
 
 //         name descriptors 
-LA_clause = LA_pre LA_post
+LA_clause = pre:LA_pre post:LA_post  {return _node2(pre, post, "LA_clause"); }
 LA_pre = pre_clause LA spaces?
 LA_post = post_clause
-LA_no_SA_handling = pre_clause LA post_clause
+// LA_no_SA_handling = pre_clause LA post_clause
 
 //         lerfu prefixes 
 LAU_clause = LAU_pre LAU_post
@@ -762,10 +785,10 @@ LAhE_post = post_clause
 LAhE_no_SA_handling = pre_clause LAhE post_clause
 
 //         sumti descriptors 
-LE_clause = LE_pre LE_post
+LE_clause = pre:LE_pre post:LE_post {return _node2(pre, post, "LE_clause"); }
 LE_pre = pre_clause LE spaces?
 LE_post = post_clause
-LE_no_SA_handling = pre_clause LE post_clause
+// LE_no_SA_handling = pre_clause LE post_clause
 
 
 //         possibly ungrammatical text right quote 
@@ -1207,13 +1230,13 @@ CMAVO "CMAVO" = A / BAI / BAhE / BE / BEI / BEhO / BIhE / BIhI / BO / BOI / BU /
 
 //___________________________________________________________________
 
-words = expr:(pause? (word pause?)*) { return join(expr); }
+words = expr:(pause? (word pause?)*) { return _join(expr); }
 
-word = expr:(lojban_word / non_lojban_word) { return join(expr); }
+word = expr:(lojban_word / non_lojban_word) { return _join(expr); }
 
-lojban_word = expr:(cmene / cmavo / brivla) { return join(expr); }
+lojban_word = expr:(cmene / cmavo / brivla) { return _join(expr); }
 
-any_word = expr:(lojban_word spaces?) { return join(expr); }
+any_word = expr:(lojban_word spaces?) { return _join(expr); }
 
 zoi_open = lojban_word
 zoi_word = non_lojban_word
@@ -1221,9 +1244,9 @@ zoi_close = lojban_word
 
 //___________________________________________________________________
 
-cmene = expr:(!h &consonant_final coda? (any_syllable / digit)* &pause) { return join(expr); }
+cmene = expr:(!h &consonant_final coda? (any_syllable / digit)* &pause) { return ["cmene", _join(expr)]; }
 
-consonant_final = expr:((non_space &non_space)* consonant &pause) { return join(expr); }
+consonant_final = expr:((non_space &non_space)* consonant &pause) { return _join(expr); }
 
 //cmene = !h cmene_syllable* &consonant coda? consonantal_syllable* onset &pause
 
@@ -1233,119 +1256,119 @@ consonant_final = expr:((non_space &non_space)* consonant &pause) { return join(
 
 //___________________________________________________________________
 
-cmavo = expr:(!cmene !CVCy_lujvo cmavo_form &post_word) { return join(expr); }
+cmavo = expr:(!cmene !CVCy_lujvo cmavo_form &post_word) { return _join(expr); }
 
-CVCy_lujvo = expr:(CVC_rafsi y h? initial_rafsi* brivla_core / stressed_CVC_rafsi y short_final_rafsi) { return join(expr); }
+CVCy_lujvo = expr:(CVC_rafsi y h? initial_rafsi* brivla_core / stressed_CVC_rafsi y short_final_rafsi) { return _join(expr); }
 
-cmavo_form = expr:(!h !cluster onset (nucleus h)* (!stressed nucleus / nucleus !cluster) / y+ / digit) { return join(expr); }
-
-//___________________________________________________________________
-
-brivla = expr:(!cmavo initial_rafsi* brivla_core) { return join(expr); }
-
-brivla_core = expr:(fuhivla / gismu / CVV_final_rafsi / stressed_initial_rafsi short_final_rafsi) { return join(expr); }
-
-stressed_initial_rafsi = expr:(stressed_extended_rafsi / stressed_y_rafsi / stressed_y_less_rafsi) { return join(expr); }
-
-initial_rafsi = expr:(extended_rafsi / y_rafsi / !any_extended_rafsi y_less_rafsi) { return join(expr); }
+cmavo_form = expr:(!h !cluster onset (nucleus h)* (!stressed nucleus / nucleus !cluster) / y+ / digit) { return _join(expr); }
 
 //___________________________________________________________________
 
-any_extended_rafsi = expr:(fuhivla / extended_rafsi / stressed_extended_rafsi) { return join(expr); }
+brivla = expr:(!cmavo initial_rafsi* brivla_core) { return _join(expr); }
 
-fuhivla = expr:(fuhivla_head stressed_syllable consonantal_syllable* final_syllable) { return join(expr); }
+brivla_core = expr:(fuhivla / gismu / CVV_final_rafsi / stressed_initial_rafsi short_final_rafsi) { return _join(expr); }
 
-stressed_extended_rafsi = expr:(stressed_brivla_rafsi / stressed_fuhivla_rafsi) { return join(expr); }
+stressed_initial_rafsi = expr:(stressed_extended_rafsi / stressed_y_rafsi / stressed_y_less_rafsi) { return _join(expr); }
 
-extended_rafsi = expr:(brivla_rafsi / fuhivla_rafsi) { return join(expr); }
-
-stressed_brivla_rafsi = expr:(&unstressed_syllable brivla_head stressed_syllable h y) { return join(expr); }
-
-brivla_rafsi = expr:(&(syllable consonantal_syllable* syllable) brivla_head h y h?) { return join(expr); }
-
-stressed_fuhivla_rafsi = expr:(fuhivla_head stressed_syllable &consonant onset y) { return join(expr); }
-
-fuhivla_rafsi = expr:(&unstressed_syllable fuhivla_head &consonant onset y h?) { return join(expr); }
-
-fuhivla_head = expr:(!rafsi_string brivla_head) { return join(expr); }
-
-brivla_head = expr:(!cmavo !slinkuhi !h &onset unstressed_syllable*) { return join(expr); }
-
-slinkuhi = expr:(consonant rafsi_string) { return join(expr); }
-
-rafsi_string = expr:(y_less_rafsi* (gismu / CVV_final_rafsi / stressed_y_less_rafsi short_final_rafsi / y_rafsi / stressed_y_rafsi / stressed_y_less_rafsi? initial_pair y)) { return join(expr); }
+initial_rafsi = expr:(extended_rafsi / y_rafsi / !any_extended_rafsi y_less_rafsi) { return _join(expr); }
 
 //___________________________________________________________________
 
-gismu = expr:(stressed_long_rafsi &final_syllable vowel &post_word) { return ["gismu", join(expr)]; }
+any_extended_rafsi = expr:(fuhivla / extended_rafsi / stressed_extended_rafsi) { return _join(expr); }
 
-CVV_final_rafsi = expr:(consonant stressed_vowel h &final_syllable vowel &post_word) { return join(expr); }
+fuhivla = expr:(fuhivla_head stressed_syllable consonantal_syllable* final_syllable) { return _join(expr); }
 
-short_final_rafsi = expr:(&final_syllable (consonant diphthong / initial_pair vowel) &post_word) { return join(expr); }
+stressed_extended_rafsi = expr:(stressed_brivla_rafsi / stressed_fuhivla_rafsi) { return _join(expr); }
 
-stressed_y_rafsi = expr:((stressed_long_rafsi / stressed_CVC_rafsi) y) { return join(expr); }
+extended_rafsi = expr:(brivla_rafsi / fuhivla_rafsi) { return _join(expr); }
 
-stressed_y_less_rafsi = expr:(stressed_CVC_rafsi !y / stressed_CCV_rafsi / stressed_CVV_rafsi) { return join(expr); }
+stressed_brivla_rafsi = expr:(&unstressed_syllable brivla_head stressed_syllable h y) { return _join(expr); }
 
-stressed_long_rafsi = expr:( (stressed_CCV_rafsi / stressed_CVC_rafsi) consonant ) { return join(expr); }
+brivla_rafsi = expr:(&(syllable consonantal_syllable* syllable) brivla_head h y h?) { return _join(expr); }
 
-stressed_CVC_rafsi = expr:(consonant stressed_vowel consonant) { return join(expr); }
+stressed_fuhivla_rafsi = expr:(fuhivla_head stressed_syllable &consonant onset y) { return _join(expr); }
 
-stressed_CCV_rafsi = expr:(initial_pair stressed_vowel) { return join(expr); }
+fuhivla_rafsi = expr:(&unstressed_syllable fuhivla_head &consonant onset y h?) { return _join(expr); }
 
-stressed_CVV_rafsi = expr:(consonant (unstressed_vowel h stressed_vowel / stressed_diphthong) r_hyphen?) { return join(expr); }
+fuhivla_head = expr:(!rafsi_string brivla_head) { return _join(expr); }
 
-y_rafsi = expr:((long_rafsi / CVC_rafsi) y h?) { return join(expr); }
+brivla_head = expr:(!cmavo !slinkuhi !h &onset unstressed_syllable*) { return _join(expr); }
 
-y_less_rafsi = expr:(!y_rafsi (CVC_rafsi !y / CCV_rafsi / CVV_rafsi) !any_extended_rafsi) { return join(expr); }
+slinkuhi = expr:(consonant rafsi_string) { return _join(expr); }
 
-long_rafsi = expr:((CCV_rafsi / CVC_rafsi) consonant) { return join(expr); }
-
-CVC_rafsi = expr:(consonant unstressed_vowel consonant) { return join(expr); }
-
-CCV_rafsi = expr:(initial_pair unstressed_vowel) { return join(expr); }
-
-CVV_rafsi = expr:(consonant (unstressed_vowel h unstressed_vowel / unstressed_diphthong) r_hyphen?) { return join(expr); }
-
-r_hyphen = expr:(r &consonant / n &r) { return join(expr); }
+rafsi_string = expr:(y_less_rafsi* (gismu / CVV_final_rafsi / stressed_y_less_rafsi short_final_rafsi / y_rafsi / stressed_y_rafsi / stressed_y_less_rafsi? initial_pair y)) { return _join(expr); }
 
 //___________________________________________________________________
 
-final_syllable = expr:(onset !y !stressed nucleus !cmene &post_word) {return join(expr);}
+gismu = expr:(stressed_long_rafsi &final_syllable vowel &post_word) { return ["gismu", _join(expr)]; }
 
-stressed_syllable = expr:(&stressed syllable / syllable &stress) {return join(expr);}
+CVV_final_rafsi = expr:(consonant stressed_vowel h &final_syllable vowel &post_word) { return _join(expr); }
 
-stressed_diphthong = expr:(&stressed diphthong / diphthong &stress) {return join(expr);}
+short_final_rafsi = expr:(&final_syllable (consonant diphthong / initial_pair vowel) &post_word) { return _join(expr); }
 
-stressed_vowel = expr:(&stressed vowel / vowel &stress) {return join(expr);}
+stressed_y_rafsi = expr:((stressed_long_rafsi / stressed_CVC_rafsi) y) { return _join(expr); }
 
-unstressed_syllable = expr:(!stressed syllable !stress / consonantal_syllable) {return join(expr);}
+stressed_y_less_rafsi = expr:(stressed_CVC_rafsi !y / stressed_CCV_rafsi / stressed_CVV_rafsi) { return _join(expr); }
 
-unstressed_diphthong = expr:(!stressed diphthong !stress) {return join(expr);}
+stressed_long_rafsi = expr:( (stressed_CCV_rafsi / stressed_CVC_rafsi) consonant ) { return _join(expr); }
 
-unstressed_vowel = expr:(!stressed vowel !stress) {return join(expr);}
+stressed_CVC_rafsi = expr:(consonant stressed_vowel consonant) { return _join(expr); }
 
-stress = expr:(consonant* y? syllable pause) {return join(expr);}
+stressed_CCV_rafsi = expr:(initial_pair stressed_vowel) { return _join(expr); }
 
-stressed = expr:(onset comma* [AEIOU]) {return join(expr);}
+stressed_CVV_rafsi = expr:(consonant (unstressed_vowel h stressed_vowel / stressed_diphthong) r_hyphen?) { return _join(expr); }
 
-any_syllable = expr:(onset nucleus coda? / consonantal_syllable) {return join(expr);}
+y_rafsi = expr:((long_rafsi / CVC_rafsi) y h?) { return _join(expr); }
 
-syllable = expr:(onset !y nucleus coda?) {return join(expr);}
+y_less_rafsi = expr:(!y_rafsi (CVC_rafsi !y / CCV_rafsi / CVV_rafsi) !any_extended_rafsi) { return _join(expr); }
 
-consonantal_syllable = expr:(consonant syllabic &(consonantal_syllable / onset) (consonant &spaces)?) {return join(expr);}
+long_rafsi = expr:((CCV_rafsi / CVC_rafsi) consonant) { return _join(expr); }
 
-coda = expr:(!any_syllable consonant &any_syllable / syllabic? consonant? &pause) {return join(expr);}
+CVC_rafsi = expr:(consonant unstressed_vowel consonant) { return _join(expr); }
 
-onset = expr:(h / consonant? glide / initial) {return join(expr);}
+CCV_rafsi = expr:(initial_pair unstressed_vowel) { return _join(expr); }
 
-nucleus = expr:(vowel / diphthong / y !nucleus) {return join(expr);}
+CVV_rafsi = expr:(consonant (unstressed_vowel h unstressed_vowel / unstressed_diphthong) r_hyphen?) { return _join(expr); }
+
+r_hyphen = expr:(r &consonant / n &r) { return _join(expr); }
+
+//___________________________________________________________________
+
+final_syllable = expr:(onset !y !stressed nucleus !cmene &post_word) {return _join(expr);}
+
+stressed_syllable = expr:(&stressed syllable / syllable &stress) {return _join(expr);}
+
+stressed_diphthong = expr:(&stressed diphthong / diphthong &stress) {return _join(expr);}
+
+stressed_vowel = expr:(&stressed vowel / vowel &stress) {return _join(expr);}
+
+unstressed_syllable = expr:(!stressed syllable !stress / consonantal_syllable) {return _join(expr);}
+
+unstressed_diphthong = expr:(!stressed diphthong !stress) {return _join(expr);}
+
+unstressed_vowel = expr:(!stressed vowel !stress) {return _join(expr);}
+
+stress = expr:(consonant* y? syllable pause) {return _join(expr);}
+
+stressed = expr:(onset comma* [AEIOU]) {return _join(expr);}
+
+any_syllable = expr:(onset nucleus coda? / consonantal_syllable) {return _join(expr);}
+
+syllable = expr:(onset !y nucleus coda?) {return _join(expr);}
+
+consonantal_syllable = expr:(consonant syllabic &(consonantal_syllable / onset) (consonant &spaces)?) {return _join(expr);}
+
+coda = expr:(!any_syllable consonant &any_syllable / syllabic? consonant? &pause) {return _join(expr);}
+
+onset = expr:(h / consonant? glide / initial) {return _join(expr);}
+
+nucleus = expr:(vowel / diphthong / y !nucleus) {return _join(expr);}
 
 //_________________________________________________________________
 
 glide = expr:(i / u) &nucleus !glide {return expr;}
 
-diphthong = expr:(a i / a u / e i / o i) !nucleus !glide {return join(expr);}
+diphthong = expr:(a i / a u / e i / o i) !nucleus !glide {return _join(expr);}
 
 vowel = expr:(a / e / i / o / u) !nucleus {return expr;}
 
@@ -1364,19 +1387,19 @@ y = comma* [yY] {return "y";}
 
 //___________________________________________________________________
 
-cluster = expr:(consonant consonant+) {return join(expr);}
+cluster = expr:(consonant consonant+) {return _join(expr);}
 
-initial_pair = expr:(&initial consonant consonant !consonant) {return join(expr);}
+initial_pair = expr:(&initial consonant consonant !consonant) {return _join(expr);}
 
-initial = expr:(affricate / sibilant? other? liquid?) !consonant !glide {return join(expr);}
+initial = expr:(affricate / sibilant? other? liquid?) !consonant !glide {return _join(expr);}
 
-affricate = expr:(t c / t s / d j / d z) {return join(expr);}
+affricate = expr:(t c / t s / d j / d z) {return _join(expr);}
 
-liquid = expr:(l / r) {return join(expr);}
+liquid = expr:(l / r) {return _join(expr);}
 
-other = expr:(p / t !l / k / f / x / b / d !l / g / v / m / n !liquid) {return join(expr);}
+other = expr:(p / t !l / k / f / x / b / d !l / g / v / m / n !liquid) {return _join(expr);}
 
-sibilant = expr:(c / s !x / (j / z) !n !liquid) {return join(expr); }
+sibilant = expr:(c / s !x / (j / z) !n !liquid) {return _join(expr); }
 
 consonant = expr:(voiced / unvoiced / syllabic) {return expr;}
 
@@ -1424,22 +1447,22 @@ h = comma* ['h] &nucleus {return "'";}
 
 //___________________________________________________________________
 
-digit = expr:(comma* [0123456789] !h !nucleus) {return join(expr);}
+digit = expr:(comma* [0123456789] !h !nucleus) {return _join(expr);}
 
-post_word = expr:(pause / !nucleus lojban_word)  {return join(expr);}
+post_word = expr:(pause / !nucleus lojban_word)  {return _join(expr);}
 
-pause = expr:(comma* space_char / EOF)  {return join(expr);}
+pause = expr:(comma* space_char / EOF)  {return _join(expr);}
 
-EOF = expr:(comma* !.)  {return join(expr);}
+EOF = expr:(comma* !.)  {return _join(expr);}
 
 comma = [,] {return "";}
 
-non_lojban_word = expr:(!lojban_word non_space+)  {return join(expr);}
+non_lojban_word = expr:(!lojban_word non_space+)  {return _join(expr);}
 
-non_space = expr:(!space_char .) {return join(expr);}
+non_space = expr:(!space_char .) {return _join(expr);}
 
 //Unicode_style and escaped chars not compatible with cl_peg
-space_char = [.\t\n\r?!\u0020]
+space_char = [.\t\n\r?!\u0020] {return "";}
 
 // space_char = [.?! ] / space_char1 / space_char2 
 // space_char1 = '	'
@@ -1447,13 +1470,13 @@ space_char = [.\t\n\r?!\u0020]
 
 //___________________________________________________________________
 
-spaces = expr:(!Y initial_spaces)  {return join(expr);}
+spaces = expr:(!Y initial_spaces)  {return _join(expr);}
 
-initial_spaces = expr:((comma* space_char / !ybu Y)+ EOF? / EOF)  {return join(expr);}
+initial_spaces = expr:((comma* space_char / !ybu Y)+ EOF? / EOF)  {return _join(expr);}
 
-ybu = expr:(Y space_char* BU)  {return join(expr);}
+ybu = expr:(Y space_char* BU)  {return _join(expr);}
 
-lujvo = expr:(!gismu !fuhivla brivla)  {return join(expr);}
+lujvo = expr:(!gismu !fuhivla brivla)  {return ["lujvo", _join(expr)];}
 
 //___________________________________________________________________
 
@@ -1557,7 +1580,7 @@ KEI = &cmavo ( k e i ) &post_word
 
 KI = &cmavo ( k i ) &post_word
 
-KOhA = &cmavo expr:( d a h u / d a h e / d i h u / d i h e / d e h u / d e h e / d e i / d o h i / m i h o / m a h a / m i h a / d o h o / k o h a / f o h u / k o h e / k o h i / k o h o / k o h u / f o h a / f o h e / f o h i / f o h o / v o h a / v o h e / v o h i / v o h o / v o h u / r u / r i / r a / t a / t u / t i / z i h o / k e h a / m a / z u h i / z o h e / c e h u / d a / d e / d i / k o / m i / d o ) &post_word { return ["KOhA", join(expr)];}
+KOhA = &cmavo expr:( d a h u / d a h e / d i h u / d i h e / d e h u / d e h e / d e i / d o h i / m i h o / m a h a / m i h a / d o h o / k o h a / f o h u / k o h e / k o h i / k o h o / k o h u / f o h a / f o h e / f o h i / f o h o / v o h a / v o h e / v o h i / v o h o / v o h u / r u / r i / r a / t a / t u / t i / z i h o / k e h a / m a / z u h i / z o h e / c e h u / d a / d e / d i / k o / m i / d o ) &post_word { return ["KOhA", _join(expr)];}
 
 KU = &cmavo ( k u ) &post_word
 
@@ -1565,13 +1588,13 @@ KUhE = &cmavo ( k u h e ) &post_word
 
 KUhO = &cmavo ( k u h o ) &post_word
 
-LA = &cmavo ( l a i / l a h i / l a ) &post_word
+LA = &cmavo expr:( l a i / l a h i / l a ) &post_word { return ["LA", _join(expr)]; }
 
 LAU = &cmavo ( c e h a / l a u / z a i / t a u ) &post_word
 
 LAhE = &cmavo ( t u h a / l u h a / l u h o / l a h e / v u h i / l u h i / l u h e ) &post_word
 
-LE = &cmavo ( l e i / l o i / l e h i / l o h i / l e h e / l o h e / l o / l e ) &post_word
+LE = &cmavo expr:( l e i / l o i / l e h i / l o h i / l e h e / l o h e / l o / l e ) &post_word { return ["LE", _join(expr)];}
 
 LEhU = &cmavo ( l e h u ) &post_word
 
