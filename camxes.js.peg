@@ -336,9 +336,9 @@ tense_modal = expr:(simple_tense_modal free* / FIhO_clause free* selbri FEhU_cla
 
 simple_tense_modal = expr:(NAhE_clause? SE_clause? BAI_clause NAI_clause? KI_clause? / NAhE_clause? ( ((time space? / space time?) CAhA_clause) / (time space? / space time?) / CAhA_clause ) KI_clause? / KI_clause / CUhE_clause) {return _node("simple_tense_modal", expr); }
 
-time = ZI_clause time_offset* (ZEhA_clause (PU_clause NAI_clause?)?)? interval_property* / ZI_clause? time_offset+ (ZEhA_clause (PU_clause NAI_clause?)?)? interval_property* / ZI_clause? time_offset* ZEhA_clause (PU_clause NAI_clause?)? interval_property* / ZI_clause? time_offset* (ZEhA_clause (PU_clause NAI_clause?)?)? interval_property+
+time = expr:(ZI_clause time_offset* (ZEhA_clause (PU_clause NAI_clause?)?)? interval_property* / ZI_clause? time_offset+ (ZEhA_clause (PU_clause NAI_clause?)?)? interval_property* / ZI_clause? time_offset* ZEhA_clause (PU_clause NAI_clause?)? interval_property* / ZI_clause? time_offset* (ZEhA_clause (PU_clause NAI_clause?)?)? interval_property+) {return _node("time", expr); }
 
-time_offset = PU_clause NAI_clause? ZI_clause?
+time_offset = expr:(PU_clause NAI_clause? ZI_clause?) {return _node("time_offset", expr); }
 
 space = VA_clause space_offset* space_interval? (MOhI_clause space_offset)? / VA_clause? space_offset+ space_interval? (MOhI_clause space_offset)? / VA_clause? space_offset* space_interval (MOhI_clause space_offset)? / VA_clause? space_offset* space_interval? MOhI_clause space_offset
 
@@ -356,29 +356,29 @@ xi_clause = XI_clause free* (number / lerfu_string) BOI_clause? / XI_clause free
 
 vocative = (COI_clause NAI_clause?)+ DOI_clause / (COI_clause NAI_clause?) (COI_clause NAI_clause?)* / DOI_clause
 
-indicators = FUhE_clause? indicator+
+indicators = expr:(FUhE_clause? indicator+) {return _node("indicators", expr); }
 
-indicator =  ((UI_clause / CAI_clause) NAI_clause? / DAhO_clause / FUhO_clause) !BU_clause
+indicator =  expr:((UI_clause / CAI_clause) NAI_clause? / DAhO_clause / FUhO_clause) !BU_clause {return _node("indicator", expr); }
 
 
 // ****************
 // Magic Words
 // ****************
 
-zei_clause = pre_clause zei_clause_no_pre
-zei_clause_no_pre = pre_zei_bu (zei_tail? bu_tail)* zei_tail post_clause
-zei_clause_no_SA = pre_zei_bu_no_SA (zei_tail? bu_tail)* zei_tail
+zei_clause = expr:(pre_clause post:zei_clause_no_pre) {return _node("zei_clause", expr); }
+zei_clause_no_pre = expr:(pre_zei_bu (zei_tail? bu_tail)* zei_tail post_clause) {return _node("zei_clause_no_pre", expr); }
+// zei_clause_no_SA = pre_zei_bu_no_SA (zei_tail? bu_tail)* zei_tail
 
-bu_clause = pre_clause bu_clause_no_pre
-bu_clause_no_pre = pre_zei_bu (bu_tail? zei_tail)* bu_tail post_clause
-bu_clause_no_SA = pre_zei_bu_no_SA (bu_tail? zei_tail)* bu_tail
+bu_clause = expr:(pre_clause post:bu_clause_no_pre) {return _node("bu_clause", expr); }
+bu_clause_no_pre = expr:(pre_zei_bu (bu_tail? zei_tail)* bu_tail post_clause) {return _node("bu_clause_no_pre", expr); }
+// bu_clause_no_SA = pre_zei_bu_no_SA (bu_tail? zei_tail)* bu_tail
 
-zei_tail = (ZEI_clause any_word)+
-bu_tail = BU_clause+
+zei_tail = expr:(ZEI_clause any_word)+ {return _node("zei_tail", expr); }
+bu_tail = expr:BU_clause+ {return _node("bu_tail", expr); }
 
-pre_zei_bu = (!BU_clause !ZEI_clause !SI_clause !SA_clause !SU_clause !FAhO_clause any_word_SA_handling) si_clause?
+pre_zei_bu = expr:(!BU_clause !ZEI_clause !SI_clause !SA_clause !SU_clause !FAhO_clause any_word_SA_handling si_clause?) {return _node("pre_zei_bu", expr); }
 // LOhU_pre / ZO_pre / ZOI_pre / !ZEI_clause !BU_clause !FAhO_clause !SI_clause !SA_clause !SU_clause any_word_SA_handling si_clause?
-pre_zei_bu_no_SA = LOhU_pre / ZO_pre / ZOI_pre / !ZEI_clause !BU_clause !FAhO_clause !SI_clause !SA_clause !SU_clause any_word si_clause?
+// pre_zei_bu_no_SA = LOhU_pre / ZO_pre / ZOI_pre / !ZEI_clause !BU_clause !FAhO_clause !SI_clause !SA_clause !SU_clause any_word si_clause?
 
 dot_star = .*
 
@@ -389,12 +389,14 @@ dot_star = .*
 // 3.  BAhE is eaten *before* a word.
 
 // Handling of what can go after a cmavo
-post_clause = spaces? si_clause? !ZEI_clause !BU_clause indicators*
+post_clause = expr:(spaces? si_clause? !ZEI_clause !BU_clause indicators*)
+  {var _n = _node("post_clause", expr);
+   return (_n.length == 1 && _n[0] == "post_clause") ? [] : _n; }
 
 pre_clause = BAhE_clause?
 
 //any_word_SA_handling = BRIVLA_pre / known_cmavo_SA / !known_cmavo_pre CMAVO_pre / CMENE_pre
-any_word_SA_handling = BRIVLA_pre / known_cmavo_SA / CMAVO_pre / CMENE_pre
+any_word_SA_handling = expr:(BRIVLA_pre / known_cmavo_SA / CMAVO_pre / CMENE_pre) {return _node("any_word_SA_handling", expr); }
 
 known_cmavo_SA = A_pre / BAI_pre / BAhE_pre / BE_pre / BEI_pre / BEhO_pre / BIhE_pre / BIhI_pre / BO_pre / BOI_pre / BU_pre / BY_pre / CAI_pre / CAhA_pre / CEI_pre / CEhE_pre / CO_pre / COI_pre / CU_pre / CUhE_pre / DAhO_pre / DOI_pre / DOhU_pre / FA_pre / FAhA_pre / FEhE_pre / FEhU_pre / FIhO_pre / FOI_pre / FUhA_pre / FUhE_pre / FUhO_pre / GA_pre / GAhO_pre / GEhU_pre / GI_pre / GIhA_pre / GOI_pre / GOhA_pre / GUhA_pre / I_pre / JA_pre / JAI_pre / JOI_pre / JOhI_pre / KE_pre / KEI_pre / KEhE_pre / KI_pre / KOhA_pre / KU_pre / KUhE_pre / KUhO_pre / LA_pre / LAU_pre / LAhE_pre / LE_pre / LEhU_pre / LI_pre / LIhU_pre / LOhO_pre / LOhU_pre / LU_pre / LUhU_pre / MAI_pre / MAhO_pre / ME_pre / MEhU_pre / MOI_pre / MOhE_pre / MOhI_pre / NA_pre / NAI_pre / NAhE_pre / NAhU_pre / NIhE_pre / NIhO_pre / NOI_pre / NU_pre / NUhA_pre / NUhI_pre / NUhU_pre / PA_pre / PEhE_pre / PEhO_pre / PU_pre / RAhO_pre / ROI_pre / SA_pre / SE_pre / SEI_pre / SEhU_pre / SI_clause / SOI_pre / SU_pre / TAhE_pre / TEI_pre / TEhU_pre / TO_pre / TOI_pre / TUhE_pre / TUhU_pre / UI_pre / VA_pre / VAU_pre / VEI_pre / VEhA_pre / VEhO_pre / VIhA_pre / VUhO_pre / VUhU_pre / XI_pre / ZAhO_pre / ZEI_pre / ZEhA_pre / ZI_pre / ZIhE_pre / ZO_pre / ZOI_pre / ZOhU_pre
 
@@ -403,13 +405,13 @@ known_cmavo_SA = A_pre / BAI_pre / BAhE_pre / BE_pre / BEI_pre / BEhO_pre / BIhE
 // Do *NOT* delete the line above!
 
 // SU clauses
-su_clause = (erasable_clause / su_word)* SU_clause
+su_clause = (erasable_clause / su_word)* SU_clause 
 
 // Handling of SI and interactions with zo and lo'u...le'u
 
 si_clause = ((erasable_clause / si_word / SA_clause) si_clause? SI_clause)+
 
-erasable_clause = bu_clause_no_pre !ZEI_clause !BU_clause / zei_clause_no_pre !ZEI_clause !BU_clause
+erasable_clause = expr:(bu_clause_no_pre !ZEI_clause !BU_clause / zei_clause_no_pre !ZEI_clause !BU_clause) {return _node("erasable_clause", expr); }
 
 sa_word = pre_zei_bu
 
@@ -485,30 +487,30 @@ BIhI_post = post_clause
 // BIhI_no_SA_handling = pre_clause BIhI post_clause
 
 //         joins two units with shortest scope 
-BO_clause = BO_pre BO_post
+BO_clause = pre:BO_pre post:BO_post  {return _node2("BO_clause", pre, post); }
 BO_pre = pre_clause BO spaces?
 BO_post = post_clause
-BO_no_SA_handling = pre_clause BO post_clause
+// BO_no_SA_handling = pre_clause BO post_clause
 
 //         number or lerfu_string terminator 
-BOI_clause = BOI_pre BOI_post
+BOI_clause = pre:BOI_pre post:BOI_post {return _node2("BOI_clause", pre, post); }
 BOI_pre = pre_clause BOI spaces?
 BOI_post = post_clause
-BOI_no_SA_handling = pre_clause BOI post_clause
+// BOI_no_SA_handling = pre_clause BOI post_clause
 
 //         turns any word into a BY lerfu word 
-BU_clause = BU_pre BU_post
-BU_clause_no_SA = BU_pre_no_SA BU BU_post
+BU_clause = pre:BU_pre post:BU_post {return _node2("BU_clause", pre, post); }
+// BU_clause_no_SA = BU_pre_no_SA BU BU_post
 BU_pre = pre_clause BU spaces?
-BU_pre_no_SA = pre_clause
+// BU_pre_no_SA = pre_clause
 BU_post = spaces?
-BU_no_SA_handling = pre_clause BU spaces?
+// BU_no_SA_handling = pre_clause BU spaces?
 
 //         individual lerfu words 
-BY_clause = BY_pre BY_post / bu_clause
+BY_clause = expr:(BY_pre BY_post / bu_clause) {return (expr[0] == "bu_clause") ? ["BY_clause", expr] : _node2("BY_clause", expr[0], expr[1]); }
 BY_pre = pre_clause BY spaces?
 BY_post = post_clause
-BY_no_SA_handling = pre_clause BY post_clause / bu_clause_no_SA
+// BY_no_SA_handling = pre_clause BY post_clause / bu_clause_no_SA
 
 
 //         specifies actualitypotentiality of tense 
@@ -977,10 +979,10 @@ PEhO_post = post_clause
 PEhO_no_SA_handling = pre_clause PEhO post_clause
 
 //         directions in time 
-PU_clause = PU_pre PU_post
+PU_clause = pre:PU_pre post:PU_post {return _node2("PA_clause", pre, post); }
 PU_pre = pre_clause PU spaces?
 PU_post = post_clause
-PU_no_SA_handling = pre_clause PU post_clause
+// PU_no_SA_handling = pre_clause PU post_clause
 
 
 //         flag for modified interpretation of GOhI 
@@ -1080,10 +1082,10 @@ TUhU_no_SA_handling = pre_clause TUhU post_clause
 
 
 //         attitudinals, observationals, discursives 
-UI_clause = UI_pre UI_post
+UI_clause = pre:UI_pre post:UI_post {return _node2("UI_clause", pre, post); }
 UI_pre = pre_clause UI spaces?
 UI_post = post_clause
-UI_no_SA_handling = pre_clause UI post_clause
+// UI_no_SA_handling = pre_clause UI post_clause
 
 
 //         distance in space_time 
@@ -1506,13 +1508,13 @@ BEhO = &cmavo expr:( b e h o ) &post_word {return ["BEhO", _join(expr)];}
 
 BIhE = &cmavo expr:( b i h e ) &post_word {return ["BIhE", _join(expr)];}
 
-BIhI = &cmavo ( m i h i / b i h o / b i h i ) &post_word
+BIhI = &cmavo expr:( m i h i / b i h o / b i h i ) &post_word {return ["BIhI", _join(expr)];}
 
-BO = &cmavo ( b o ) &post_word
+BO = &cmavo expr:( b o ) &post_word  {return ["BO", _join(expr)];}
 
-BOI = &cmavo ( b o i ) &post_word
+BOI = &cmavo expr:( b o i ) &post_word {return ["BOI", _join(expr)];}
 
-BU = &cmavo ( b u ) &post_word
+BU = &cmavo expr:( b u ) &post_word {return ["BU", _join(expr)];}
 
 BY = ybu / &cmavo expr:( j o h o / r u h o / g e h o / j e h o / l o h a / n a h a / s e h e / t o h a / g a h e / y h y / b y / c y / d y / f y / g y / j y / k y / l y / m y / n y / p y / r y / s y / t y / v y / x y / z y ) &post_word {return ["BY", _join(expr)];}
 
@@ -1664,7 +1666,7 @@ PEhE = &cmavo ( p e h e ) &post_word
 
 PEhO = &cmavo ( p e h o ) &post_word
 
-PU = &cmavo ( b a / p u / c a ) &post_word
+PU = &cmavo expr:( b a / p u / c a ) &post_word {return ["PU", _join(expr)];}
 
 RAhO = &cmavo ( r a h o ) &post_word
 
@@ -1698,7 +1700,7 @@ TUhE = &cmavo ( t u h e ) &post_word
 
 TUhU = &cmavo ( t u h u ) &post_word
 
-UI = &cmavo ( i h a / i e / a h e / u h i / i h o / i h e / a h a / i a / o h i / o h e / e h e / o i / u o / e h i / u h o / a u / u a / a h i / i h u / i i / u h a / u i / a h o / a i / a h u / i u / e i / o h o / e h a / u u / o h a / o h u / u h u / e h o / i o / e h u / u e / i h i / u h e / b a h a / j a h o / c a h e / s u h a / t i h e / k a h u / s e h o / z a h a / p e h i / r u h a / j u h a / t a h o / r a h u / l i h a / b a h u / m u h a / d o h a / t o h u / v a h i / p a h e / z u h u / s a h e / l a h a / k e h u / s a h u / d a h i / j e h u / s a h a / k a u / t a h u / n a h i / j o h a / b i h u / l i h o / p a u / m i h u / k u h i / j i h a / s i h a / p o h o / p e h a / r o h i / r o h e / r o h o / r o h u / r o h a / r e h e / l e h o / j u h o / f u h i / d a i / g a h i / z o h o / b e h u / r i h e / s e h i / s e h a / v u h e / k i h a / x u / g e h e / b u h o ) &post_word
+UI = &cmavo expr:( i h a / i e / a h e / u h i / i h o / i h e / a h a / i a / o h i / o h e / e h e / o i / u o / e h i / u h o / a u / u a / a h i / i h u / i i / u h a / u i / a h o / a i / a h u / i u / e i / o h o / e h a / u u / o h a / o h u / u h u / e h o / i o / e h u / u e / i h i / u h e / b a h a / j a h o / c a h e / s u h a / t i h e / k a h u / s e h o / z a h a / p e h i / r u h a / j u h a / t a h o / r a h u / l i h a / b a h u / m u h a / d o h a / t o h u / v a h i / p a h e / z u h u / s a h e / l a h a / k e h u / s a h u / d a h i / j e h u / s a h a / k a u / t a h u / n a h i / j o h a / b i h u / l i h o / p a u / m i h u / k u h i / j i h a / s i h a / p o h o / p e h a / r o h i / r o h e / r o h o / r o h u / r o h a / r e h e / l e h o / j u h o / f u h i / d a i / g a h i / z o h o / b e h u / r i h e / s e h i / s e h a / v u h e / k i h a / x u / g e h e / b u h o ) &post_word {return ["UI", _join(expr)];}
 
 VA = &cmavo ( v i / v a / v u ) &post_word
 
