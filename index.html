@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
     <script type="text/javascript" src="https://raw.github.com/mhagiwara/camxes.js/master/camxes.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 
     <title>camxes.js - Lojban Parser written in JavaScript based on camxes.</title>
   </head>
@@ -34,28 +35,36 @@
       <section id="main_content" class="inner">
         <h3>What is camxes.js?</h3>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>camxes.js is a Lojban parser written in JavaScript. It is based on the <a href="http://subvert-the-dominant-paradigm.net/~jbominji/code/lojban_grammar.peg">camxes PEG</a>.</p>
 
-
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>The parser receives a Lojban text (string) and returns a parsed tree represented as a JavaScript object. It works completely offline!</p>
 
 <h3>Usage</h3>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<p>Include <a href="https://github.com/mhagiwara/camxes.js">camxes.js</a> from the code base as the following:
+
+<pre><code> &lt;script type="text/javascript" src="/path/to/camxes.js"&gt;&lt;/script&gt;
 </code></pre>
 
+<p>Then parse your input using the parser<code>camxes</code>:
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<pre><code>var result = camxes.parse( "mi klama le zarci" );
+</code></pre>
+
+<p>the <code>parse()</code> method throws an exception if the input is ungrammatical.</p>
 
 <h3>Demo</h3>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+Type any Lojban text in the following textarea. The result will be parsed as you type:
+<textarea id="demo_textarea" cols="90" rows="5"></textarea>
 
-<h3>Contributors:</h3>
+<div style="display:block; overflow: scroll; max-height:24em;" height="24em">
+  <pre><code id="parse_result" width="100%" height="100"> </code></pre>
+</div>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<h3>Contributor:</h3>
+
+<p>Developed and maintained by Masato Hagiwara. <a href="https://github.com/mhagiwara">github: @mhagiwara</a> <a href="http://twitter.com/jbomasatos">twitter @jbomasatos</a></p></p>
 
       </section>
     </div>
@@ -63,12 +72,24 @@ $ git checkout gh-pages
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">Camxes.js maintained by <a href="https://github.com/mhagiwara">mhagiwara</a></p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
 
     
+<script>
+$('#demo_textarea').bind( "keyup",
+  function(e) {
+    try {
+      var result = camxes.parse( $(this).val() );
+    } catch (e) {
+      $('#parse_result').text( e.toString() );
+      return;
+    }
+    var result_str = JSON.stringify(result, undefined, 2);
+    $('#parse_result').text( result_str );
+  } );
+</script>
 
   </body>
 </html>
