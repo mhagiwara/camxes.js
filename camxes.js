@@ -868,7 +868,7 @@ var camxes = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, expr) {return _node("intro_null", expr);})(pos0, result0);
+          result0 = (function(offset, expr) {return _node_nonempty("intro_null", expr); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -926,7 +926,7 @@ var camxes = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, expr) {return _node("text_part_2", expr);})(pos0, result0);
+          result0 = (function(offset, expr) {return _node_nonempty("text_part_2", expr); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -972,7 +972,7 @@ var camxes = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, expr) {return _node("intro_si_clause", expr);})(pos0, result0);
+          result0 = (function(offset, expr) {return _node_nonempty("intro_si_clause", expr); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -3223,8 +3223,7 @@ var camxes = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, expr) {var _n = _node("tail_terms", expr);
-           return (_n.length == 1 && _n[0] == "tail_terms") ? [] : _n; })(pos0, result0);
+          result0 = (function(offset, expr) {return _node_nonempty("tail_terms", expr); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -13970,8 +13969,7 @@ var camxes = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, expr) {var _n = _node("post_clause", expr);
-           return (_n.length == 1 && _n[0] == "post_clause") ? [] : _n; })(pos0, result0);
+          result0 = (function(offset, expr) {return _node_nonempty("post_clause", expr); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -22824,7 +22822,7 @@ var camxes = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, expr) {return _node("SI_clause", pre, post); })(pos0, result0);
+          result0 = (function(offset, expr) {return _node("SI_clause", expr); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -55160,6 +55158,12 @@ var camxes = (function(){
           return [label].concat(_node(arg1)).concat(_node(arg2));
         }
       
+        function _node_nonempty(label, arg)
+        {
+          var _n = _node(label, arg);
+          return (_n.length == 1 && _n[0] == label) ? [] : _n;
+        }
+      
       
       var result = parseFunctions[startRule]();
       
@@ -55244,4 +55248,4 @@ var camxes = (function(){
   result.SyntaxError.prototype = Error.prototype;
   
   return result;
-})();
+})()
