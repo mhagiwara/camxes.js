@@ -12,3 +12,4 @@ ChangeLog:
 * [FIXED 5/4/2013] [TO DO] remove dangling nodes (e.g., tail_terms) 
 * 5/6/2013 : Fixed some bugs related to SI, removed empty nodes (intro_null, text_part_2, etc.)
 
+camxes.js can be used, modified, and re-distributed under MIT license.
